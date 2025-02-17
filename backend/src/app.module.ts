@@ -1,18 +1,10 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { UsersModule } from './users/users.module';
-import { AuthModule } from './auth/auth.module';
-import { TemplatesModule } from './templates/templates.module';
-import { FormsModule } from './forms/forms.module';
-import { CommentsModule } from './comments/comments.module';
-import { LikesModule } from './likes/likes.module';
-import { AdminModule } from './admin/admin.module';
-import { UsersModule } from './users/users.module';
 import { AuthController } from './auth/auth.controller';
 import { AuthService } from './auth/auth.service';
-import { AouthModule } from './aouth/aouth.module';
 import { AuthModule } from './auth/auth.module';
 import { TemplatesService } from './templates/templates.service';
 import { TemplatesController } from './templates/templates.controller';
@@ -30,12 +22,11 @@ import { AdminService } from './admin/admin.service';
 import { AdminController } from './admin/admin.controller';
 import { AdminModule } from './admin/admin.module';
 
-
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env', 
+      envFilePath: '.env',
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -54,9 +45,22 @@ import { AdminModule } from './admin/admin.module';
     CommentsModule,
     LikesModule,
     AdminModule,
-    AouthModule,
   ],
-  controllers: [AppController, AuthController, TemplatesController, FormsController, CommentsController, LikesController, AdminController],
-  providers: [AppService, AuthService, TemplatesService, FormsService, CommentsService, LikesService, AdminService],
+  controllers: [
+    AuthController,
+    TemplatesController,
+    FormsController,
+    CommentsController,
+    LikesController,
+    AdminController,
+  ],
+  providers: [
+    AuthService,
+    TemplatesService,
+    FormsService,
+    CommentsService,
+    LikesService,
+    AdminService,
+  ],
 })
 export class AppModule {}
