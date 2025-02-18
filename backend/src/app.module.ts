@@ -3,25 +3,12 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { UsersModule } from './users/users.module';
-import { AuthController } from './auth/auth.controller';
-import { AuthService } from './auth/auth.service';
 import { AuthModule } from './auth/auth.module';
-import { TemplatesService } from './templates/templates.service';
-import { TemplatesController } from './templates/templates.controller';
 import { TemplatesModule } from './templates/templates.module';
-import { FormsService } from './forms/forms.service';
-import { FormsController } from './forms/forms.controller';
 import { FormsModule } from './forms/forms.module';
-import { CommentsService } from './comments/comments.service';
-import { CommentsController } from './comments/comments.controller';
 import { CommentsModule } from './comments/comments.module';
-import { LikesService } from './likes/likes.service';
-import { LikesController } from './likes/likes.controller';
 import { LikesModule } from './likes/likes.module';
-import { AdminService } from './admin/admin.service';
-import { AdminController } from './admin/admin.controller';
 import { AdminModule } from './admin/admin.module';
-
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -46,21 +33,6 @@ import { AdminModule } from './admin/admin.module';
     LikesModule,
     AdminModule,
   ],
-  controllers: [
-    AuthController,
-    TemplatesController,
-    FormsController,
-    CommentsController,
-    LikesController,
-    AdminController,
-  ],
-  providers: [
-    AuthService,
-    TemplatesService,
-    FormsService,
-    CommentsService,
-    LikesService,
-    AdminService,
-  ],
+
 })
 export class AppModule {}
