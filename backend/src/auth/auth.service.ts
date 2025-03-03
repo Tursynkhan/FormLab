@@ -14,7 +14,12 @@ export class AuthService {
 
   async validateUser(email: string, pass: string): Promise<Omit<User, 'passwordHash'> | null> {
     const user = await this.usersService.findByEmail(email);
+    console.log('Found user:', user);
+    if (user) {
+      console.log('Password hash:', user.passwordHash);
+    }
     if (user && await bcrypt.compare(pass, user.passwordHash)) {
+      console.log('password is matched');
       const { passwordHash, ...result } = user; // eslint-disable-line @typescript-eslint/no-unused-vars
       return result;
     }
