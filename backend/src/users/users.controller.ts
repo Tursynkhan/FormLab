@@ -28,7 +28,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Get user by id' })
   @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200, description: 'User found', type: User })
-  async findById(@Param('id') id: number): Promise<User> {
+  async findById(@Param('id') id: string): Promise<User> {
     const user = await this.usersService.findById(id);
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
@@ -41,7 +41,7 @@ export class UsersController {
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: User })
   @ApiResponse({ status: 200, description: 'User updated successfully', type: User })
-  async update(@Param('id') id: number, @Body() data: Partial<User>): Promise<User> {
+  async update(@Param('id') id: string, @Body() data: Partial<User>): Promise<User> {
     return this.usersService.update(id, data);
   }
 
@@ -49,7 +49,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Delete user by id' })
   @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200, description: 'User deleted successfully' })
-  async remove(@Param('id') id: number): Promise<void> {
+  async remove(@Param('id') id: string): Promise<void> {
     return this.usersService.remove(id);
   }
 }

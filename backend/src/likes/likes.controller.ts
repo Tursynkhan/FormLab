@@ -26,7 +26,7 @@ export class LikesController {
   @ApiQuery({ name: 'templateId', type: Number })
   @ApiQuery({ name: 'userId', type: Number })
   @ApiResponse({ status: 200, description: 'Like removed successfully' })
-  async remove(@Query('templateId') templateId: number, @Query('userId') userId: number) {
-    return this.likesService.remove(+templateId, +userId);
+  async remove(@Query('templateId') templateId: number, @Query('userId') userId: string) {
+    return this.likesService.remove(+templateId, userId);
   }
 }

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -18,7 +19,7 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { email } });
   }
 
-  async findById(id: number): Promise<User | null> {
+  async findById(id: string): Promise<User | null> {
     return this.usersRepository.findOne({ where: { id } });
   }
 
@@ -26,7 +27,7 @@ export class UsersService {
     return this.usersRepository.find();
   }
 
-  async update(id: number, data: Partial<User>): Promise<User> {
+  async update(id: string, data: Partial<User>): Promise<User> {
     await this.usersRepository.update(id, data);
     const user = await this.findById(id);
     if (!user) {
@@ -34,8 +35,15 @@ export class UsersService {
     }
     return user;
   }
+  async updateRefreshToken(id: string, refreshToken: string): Promise<void> {
+    const hash = await bcrypt.hash(refreshToken, 10);
+    await this.usersRepository.update(id, { refreshTokenHash: hash });
+  }
 
-  async remove(id: number): Promise<void> {
+  async removeRefreshToken(id: string): Promise<void> {
+    await this.usersRepository.update(id, { refreshTokenHash: undefined });
+  }
+  async remove(id: string): Promise<void> {
     await this.usersRepository.delete(id);
   }
 }

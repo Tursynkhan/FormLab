@@ -8,17 +8,18 @@ import { jwtConstants } from './constants';
 import { JwtStrategy } from './jwt.strategy';
 import { LocalStrategy } from './local.strategy';
 import { AuthController } from './auth.controller';
+import { RefreshStrategy } from './refresh.strategy';
 
 @Module({
   imports: [
     UsersModule,
     PassportModule,
     JwtModule.register({
-      secret: jwtConstants.secret,
-      signOptions: { expiresIn: '1d' },
+      secret: jwtConstants.accessSecret,
+      signOptions: { expiresIn: jwtConstants.accessExpiration },
     }),
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy,RefreshStrategy],
   controllers: [AuthController],
 })
 export class AuthModule {}

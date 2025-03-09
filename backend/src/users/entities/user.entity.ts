@@ -7,8 +7,8 @@ import { Like } from '../../likes/entities/like.entity';
 
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ unique: true })
   username: string;
@@ -21,6 +21,10 @@ export class User {
 
   @Column({ default: 'user' })
   role: string; // 'user' или 'admin'
+  
+  @Column({ nullable: true })
+  refreshTokenHash?: string;
+
 
   @Column({ default: false })
   isBlocked: boolean;

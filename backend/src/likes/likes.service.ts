@@ -20,7 +20,7 @@ export class LikesService {
     return this.likeRepository.save(like);
   }
 
-  async remove(templateId: number, userId: number): Promise<void> {
+  async remove(templateId: number, userId: string): Promise<void> {
     await this.likeRepository.delete({ template: { id: templateId }, user: { id: userId } });
   }
 }
