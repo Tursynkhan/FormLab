@@ -9,6 +9,7 @@ import { JwtStrategy } from './jwt.strategy';
 import { LocalStrategy } from './local.strategy';
 import { AuthController } from './auth.controller';
 import { RefreshStrategy } from './refresh.strategy';
+import { LocalAuthGuard } from './local-auth.guard';
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { RefreshStrategy } from './refresh.strategy';
       signOptions: { expiresIn: jwtConstants.accessExpiration },
     }),
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy,RefreshStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy,RefreshStrategy,LocalAuthGuard],
   controllers: [AuthController],
 })
 export class AuthModule {}

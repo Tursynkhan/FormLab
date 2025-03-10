@@ -10,7 +10,6 @@ export type AuthenticatedUser = Omit<User, 'passwordHash'>;
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
   constructor(private authService: AuthService) {
-    // Используем email вместо username
     super({ usernameField: 'email' });
   }
 
