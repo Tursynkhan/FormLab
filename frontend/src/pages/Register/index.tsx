@@ -30,11 +30,11 @@ const RegisterPage: React.FC = () => {
       const payload = {
         username: data.username,
         email: data.email,
-        passwordHash: data.password,
+        password: data.password,
       };
       const response = await axios.post<IRegisterResponse>(`${API_URL}/auth/register`, payload);
       console.log('Registration successful:', response.data);
-      navigate('/login');
+      navigate('/auth/login');
     } catch (err: unknown) {
       if (isAxiosError(err)) {
         console.error('Axios error:', err.response?.data || err);
