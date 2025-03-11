@@ -1,9 +1,15 @@
 import { createContext, useState, ReactNode, Dispatch, SetStateAction } from "react";
 import { useEffect } from "react";
 interface AuthData {
-    accessToken?: string | null; 
+    accessToken?: string | null;
     refreshToken?: string | null;
-    username?: string | null;
+    user?: User | null;
+}
+
+export interface User {
+    username: string;
+    role: string;
+    id: string;
 }
 
 interface AuthContextType {

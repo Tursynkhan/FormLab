@@ -2,6 +2,7 @@ import React from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Cookies from "js-cookie";
 import useAuth from '../../hooks/useAuth';
 import styles from "./Login.module.scss"
 import Input from "../../components/Input"
@@ -13,7 +14,6 @@ interface ILoginForm {
 
 interface ILoginResponse {
   accessToken: string;
-  refreshToken: string;
   username: string;
 }
 
@@ -32,10 +32,13 @@ const LoginPage: React.FC = () => {
     try {
       const response = await axios.post<ILoginResponse>(`${API_URL}/auth/login`, data, { withCredentials: true });
       console.log('Login successful:', response.data);
+      const { accessToken } = response.data;
+
+      Cookies.set("accessToken", accessToken, { expires: 1, secure: true });
+
       setAuth(prev => ({
         ...prev,
         accessToken: response.data.accessToken,
-        refreshToken: response.data.refreshToken,
         username:response.data.username
       }));
 

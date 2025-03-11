@@ -1,22 +1,29 @@
 import { axiosPrivate } from "../api/axios";
 import { useEffect } from "react";
+import Cookies from "js-cookie";
 import useRefreshToken from "./useRefreshToken";
 import useAuth from "./useAuth";
 
 const useAxiosPrivate = () => {
     const refresh = useRefreshToken();
-    const { auth } = useAuth();
+    const { auth,accessToken } = useAuth();
 
     useEffect(() => {
 
-        const requestIntercept = axiosPrivate.interceptors.request.use(
-            config => {
-                if (config.headers && !config.headers['Authorization']) {
-                    config.headers['Authorization'] = `Bearer ${auth?.accessToken}`;
+        const requestInterceptor = axios.interceptors.request.use(
+            (config) => {
+                const token = accessToken || Cookies.get("accessToken");
+                if (token) {
+                    if (!config.headers) {
+                        config.headers = {};
+                    }
+                    config.headers["Authorization"] = `Bearer ${token}`;
                 }
                 return config;
-            }, (error) => Promise.reject(error)
+            },
+            (error) => Promise.reject(error)
         );
+
 
         const responseIntercept = axiosPrivate.interceptors.response.use(
             response => response,
@@ -36,10 +43,10 @@ const useAxiosPrivate = () => {
         );
 
         return () => {
-            axiosPrivate.interceptors.request.eject(requestIntercept);
+            axiosPrivate.interceptors.request.eject(requestInterceptor);
             axiosPrivate.interceptors.response.eject(responseIntercept);
         }
-    }, [auth, refresh])
+    }, [auth, refresh,accessToken])
 
     return axiosPrivate;
 }
