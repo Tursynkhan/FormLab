@@ -34,7 +34,7 @@ const LoginPage: React.FC = () => {
       console.log('Login successful:', response.data);
       const { accessToken } = response.data;
 
-      Cookies.set("accessToken", accessToken, { expires: 1, secure: true });
+      Cookies.set("accessToken", accessToken, { expires: 1/1440, secure: true });
 
       setAuth(prev => ({
         ...prev,

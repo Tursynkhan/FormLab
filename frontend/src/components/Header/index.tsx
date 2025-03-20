@@ -1,42 +1,40 @@
 import React from 'react';
-import { AppBar, Toolbar, Link, Button, Typography } from '@mui/material';
 import useAuth from '../../hooks/useAuth';
+import styles from "./Header.module.scss"
+type HeaderProps = {
+  search: string | null;
+  user: User | null;
+  logout: () => void;
+};
 
-const Header: React.FC = () => {
+const Header = ({ search, user, logout }: HeaderProps) => {
+  const navigate = useNavigate();
 
-  const { auth, setAuth } = useAuth();
-
-  const handleLogout = () => {
-    setAuth({ accessToken: null, user: null });
-  };
+  const handleChange = debounce<ChangeEvent<HTMLInputElement>>(
+    ({ target: { value } }) => {
+      navigate({ search: value ? `?search=${value}` : "" });
+    },
+    500
+  );
 
   return (
-    <AppBar position="static">
-      <Toolbar>
-        <Link href="/" color="inherit" variant="h6" underline="none" sx={{ flexGrow: 1 }}>
-          FormLab
-        </Link>
-        {auth?.user?.username ? (
-          <>
-            <Typography variant="body1" sx={{ marginRight: 2 }}>
-              {auth?.user?.username}
-            </Typography>
-            <Button color="inherit" onClick={handleLogout}>
-              Logout
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button color="inherit" component={Link} href="/auth/login">
-              Login
-            </Button>
-            <Button color="inherit" component={Link} href="/auth/register">
-              Register
-            </Button>
-          </>
-        )}
-      </Toolbar>
-    </AppBar>
+    <div className={styles.container}>
+      <div className={styles.logo}>
+        {googleFormIcon}
+        <span>Google Form</span>
+      </div>
+      <div className={styles.search_box}>
+        <input
+          placeholder="Search by title"
+          defaultValue={search || ""}
+          onChange={handleChange}
+        />
+        <i className="bx-search"></i>
+      </div>
+      <div className={styles.avatar}>
+        <Avatar userName={user?.name} logout={logout} />
+      </div>
+    </div>
   );
 };
 

@@ -12,7 +12,7 @@ const useRefreshToken = () => {
 
     const refresh = async (): Promise<string> => {
         try{
-            const response = await axios.post<RefreshResponse>(`${API_URL}/auth/refresh`, {
+            const response = await axios.post<RefreshResponse>(`${API_URL}/auth/refresh`, {},{
                 withCredentials: true
             });
             console.log('Refreshed token:', response.data.accessToken);

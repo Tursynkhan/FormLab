@@ -5,7 +5,11 @@ interface AuthData {
     refreshToken?: string | null;
     user?: User | null;
 }
-
+const initialAuthState: AuthData = {
+    accessToken: null,
+    refreshToken: null,
+    user: null,
+  };
 export interface User {
     username: string;
     role: string;
@@ -21,7 +25,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [auth, setAuth] = useState<AuthData>({});
+    const [auth, setAuth] = useState<AuthData>(initialAuthState);
     useEffect(() => {
         console.log('Auth state updated:', auth);
     }, [auth]);
