@@ -1,19 +1,17 @@
-import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useState, useEffect, CSSProperties } from "react";
+import { useForm, FieldErrors } from "react-hook-form";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Section from "./Section"
 import Field from "./Field"
-import { FormDetail } from "../../types/Form";
-import { FormPages } from "../../types/Form"
+import { FormDetail, FormSubmitData, FormPages } from "../../types/Form";
+import Modal from "../Modal";
 import useTitle from "../../hooks/useTitle";
 import styles from "./FormBuilder.module.scss"
+import useAuth from "../../hooks/useAuth";
 
 const FormBuilder = (formPage: FormPages) => {
 
-  const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isSubmited, setIsSubmited] = useState(false);
   const [isResponded, setIsResponded] = useState(false);
@@ -24,6 +22,7 @@ const FormBuilder = (formPage: FormPages) => {
   const navigate = useNavigate();
 
   const { isEdit, isView } = formPage;
+  const { auth } = useAuth();
 
   const methods = useForm<FormDetail>({ mode: "onChange" });
   const { handleSubmit, reset, watch, setValue } = methods;
@@ -31,25 +30,13 @@ const FormBuilder = (formPage: FormPages) => {
 
   useTitle(formData.title);
 
-  
-  useEffect(() => {
-    getFormDetails();
-    if (isView) getResponseStatus();
-  }, [formId]);
 
-  const getResponseStatus = async () => {
-    if (!formId) return;
-    const {
-      data: { status },
-    } = await checkResponseStatus(formId);
-    setIsResponded(status);
-  };
 
   const getFormDetails = async () => {
     if (!formId) return;
     try {
-      const { data: formDetail } = await getFormById(formId);
-      if (isEdit && formDetail.creatorId !== user?._id) {
+      const { data: formDetail } = await axios.get<{ creatorId: string } & FormDetail>(`/templates/${formId}`);
+      if (isEdit && formDetail.creatorId !== auth.user?.id) {
         toast("Form creator only have the edit access", { type: "error" });
         navigate("/form/list");
       } else {
@@ -59,8 +46,74 @@ const FormBuilder = (formPage: FormPages) => {
       if (isLoading) setIsLoading(false);
     }
   };
+  const getResponseStatus = async (userId: string) => {
+    if (!formId) return;
+    try {
+      const { data } = await axios.post<{ status: boolean }>(
+        "/forms/status",
+        { templateId: Number(formId), userId },
+        { withCredentials: true }
+      );
+      setIsResponded(data.status);
+    } catch (error) {
+      console.error("Error checking response status:", error);
+    }
+  };
 
-  
+  useEffect(() => {
+    getFormDetails();
+    if (isView) getResponseStatus(auth?.user?.id || "");
+  }, [formId]);
+
+
+  const getFormResponse = (data: FormDetail): FormSubmitData[] => {
+    const responses: FormSubmitData[] = [];
+    data.sections.forEach((section) => {
+      section.fields.forEach((field) => {
+        if (!field._id) return;
+        const formSubmitData: FormSubmitData = {
+          fieldId: field._id,
+          response: null,
+        };
+        if (field.other && field.otherReason) {
+          if (field.fieldType === "radio" && field.response === "Other") {
+            formSubmitData.response = `Other: ${field.otherReason}`;
+          } else if (
+            field.fieldType === "checkbox" &&
+            Array.isArray(field.response) &&
+            field.response.includes("Other")
+          ) {
+            formSubmitData.response = [
+              ...field.response.filter((val: string) => val !== "Other"),
+              `Other: ${field.otherReason}`,
+            ];
+          }
+        } else if (field.response) {
+          formSubmitData.response = field.response;
+        }
+        responses.push(formSubmitData);
+      });
+    });
+    return responses;
+  };
+
+  const submitResponse = async (data: FormDetail) => {
+    if (!data._id) return;
+    const body = {
+      formId: data._id,
+      answers: getFormResponse(data),
+    };
+    try {
+      await axios.post("/forms", body, { withCredentials: true });
+      clearForm();
+      setIsSubmited(true);
+      toast.success("Response submitted successfully");
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast.error("Form submission failed");
+    }
+  };
+
   const onSubmit = (data: FormDetail, action: "next" | "back" | "submit") => {
     if (action === "next") {
       setActiveSection((section) => section + 1);
@@ -71,55 +124,12 @@ const FormBuilder = (formPage: FormPages) => {
     }
   };
 
-  const submitResponse = async (data: FormDetail) => {
-    if (!data._id) return;
-    const body = {
-      responses: getFormResponse(data),
-      formId: data._id,
-    };
-    await sendResponse(body);
-    clearForm();
-    setIsSubmited(true);
-  };
-
-  const getFormResponse = (data: FormDetail): FormSubmitData[] => {
-    const responses = data.sections.reduce((acc: FormSubmitData[], section) => {
-      section.fields.forEach(({ response, fieldType, other, otherReason, _id }) => {
-        if (!_id) return;
-        const formSubmitData: FormSubmitData = {
-          fieldId: _id,
-          response: null,
-        };
-        if (other && otherReason) {
-          if (fieldType === "radio" && response === "Other") {
-            formSubmitData.response = `Other : ${otherReason}`;
-          } else if (
-            fieldType === "checkbox" &&
-            Array.isArray(response) &&
-            response.includes("Other")
-          ) {
-            formSubmitData.response = [
-              ...response.filter((val: string) => val !== "Other"),
-              `Other : ${otherReason}`,
-            ];
-          }
-        } else if (response) {
-          formSubmitData.response = response;
-        }
-        acc.push(formSubmitData);
-      });
-      return acc;
-    }, [] as FormSubmitData[]);
-    return responses;
-  };
-
-  const onInvalid = (errors: any, action?: "next" | "back") => {
+  const onInvalid = (error: any,action?: "next" | "back") => {
     if (action === "back") {
       setActiveSection((section) => section - 1);
     } else if (action === "next") {
-      if (isEmpty(errors?.sections?.[activeSection])) {
-        setActiveSection((section) => section + 1);
-      }
+      setActiveSection((section) => section + 1);
+
     }
   };
 
@@ -129,12 +139,9 @@ const FormBuilder = (formPage: FormPages) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleTitle = (title: string) => {
-    if (!formId) return;
-    setValue("title", title);
-  };
+
   return (
-    <Fragment>
+    <div>
       <div
         className={styles.bg}
         style={{ "--top": isEdit ? "111px" : "0px" } as CSSProperties}
@@ -143,16 +150,16 @@ const FormBuilder = (formPage: FormPages) => {
           <div>Loading...</div>
         ) : (
           <div className={styles.container}>
-        {formData.sections?.map(
-                    ({ _id, title, description, fields }, sectionIndex) => {
-                      if (isView && sectionIndex !== activeSection) return null;
-                      const sectionHeader =
-                        formData.sections.length > 1
-                          ? `Section ${sectionIndex + 1} of ${formData.sections.length}`
-                          : undefined;
-                      const isSelected = selectedId === sectionIndex.toString();
+            {formData.sections?.map(
+              ({ title, description, fields }, sectionIndex) => {
+                if (isView && sectionIndex !== activeSection) return null;
+                const sectionHeader =
+                  formData.sections.length > 1
+                    ? `Section ${sectionIndex + 1} of ${formData.sections.length}`
+                    : undefined;
+                const isSelected = selectedId === sectionIndex.toString();
                 return (
-                  <div  key={sectionIndex}>
+                  <div key={sectionIndex}>
                     <Section
                       title={title}
                       selectedId={selectedId}
@@ -168,23 +175,22 @@ const FormBuilder = (formPage: FormPages) => {
                     <div
                       className={styles.wrapper}>
                       {fields.map((field, fieldIndex) => {
-                            const fieldId = `${sectionIndex}${fieldIndex}`;
-                            const isFieldSelected = selectedId === fieldId;
-                            return (
-                              <Field
-                                key={fieldId}
-                                field={field}
-                                fieldId={fieldId}
-                                tabIndex={-1}
-                                sectionIndex={sectionIndex}
-                                fieldIndex={fieldIndex}
-                                formPage={formPage}
-                                isSelected={isFieldSelected}
-                                register={register}
-                                onClick={() => setSelectedId(fieldId)}
-                              />
-                            );
-                          })}
+                        const fieldId = `${sectionIndex}${fieldIndex}`;
+                        const isFieldSelected = selectedId === fieldId;
+                        return (
+                          <Field
+                            key={fieldId}
+                            field={field}
+                            fieldId={fieldId}
+                            tabIndex={-1}
+                            sectionIndex={sectionIndex}
+                            fieldIndex={fieldIndex}
+                            formPage={formPage}
+                            isSelected={isFieldSelected}
+                            onClick={() => setSelectedId(fieldId)}
+                          />
+                        );
+                      })}
                     </div>
                   </div>
                 );
@@ -215,7 +221,7 @@ const FormBuilder = (formPage: FormPages) => {
                       Next
                     </button>
                   )}
-                  {activeSection === sections.length - 1 && (
+                  {activeSection === formData.sections.length - 1 && (
                     <button
                       className={styles.btn_submit}
                       onClick={handleSubmit(
@@ -247,7 +253,7 @@ const FormBuilder = (formPage: FormPages) => {
           )}
         </div>
       </Modal>
-    </Fragment>
+    </div>
   )
 }
 

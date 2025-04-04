@@ -27,6 +27,11 @@ export type FormField = {
   rules: FormRules;
 };
 
+export type FormSubmitData = {
+  fieldId: string;
+  response: string | string[] | null;
+};
+
 export type FormType =
   | "checkbox"
   | "dropdown"
