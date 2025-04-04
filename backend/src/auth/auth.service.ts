@@ -34,7 +34,7 @@ export class AuthService {
   async login(
     user: Partial<User>,
     res: Response,
-  ): Promise<{ accessToken: string }> {
+  ): Promise<{ accessToken: string, username: string }> {
     const payload = {
       username: user.username,
       sub: user.id,
@@ -56,14 +56,15 @@ export class AuthService {
 
     const refreshTokenSignature = refreshToken.split('.')[2];  
     await this.usersService.updateRefreshToken(user.id!.toString(), refreshTokenSignature);
-
+    console.log('service1')
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-    return { accessToken };
+    console.log('service2')
+    return { accessToken ,
+      username: user.username ?? 'Guest'
+    };
   }
   async refreshTokens(refreshToken: string) {
     try {

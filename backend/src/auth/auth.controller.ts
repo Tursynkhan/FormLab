@@ -33,7 +33,7 @@ export class AuthController {
     description: 'User logged in successfully',
     type: LoginResponseDto,
   })
-  async login(@Req() req: { user: User }, @Res() res: Response) {
+  async login(@Req() req: { user: User }, @Res({passthrough:true}) res: Response) {
     console.log("Login controller")
     return this.authService.login(req.user, res);
   }
@@ -70,8 +70,6 @@ export class AuthController {
 
     res.cookie('refreshToken', result.newRefreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 

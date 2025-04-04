@@ -22,13 +22,27 @@ export class FormsService {
   }
 
   async findOne(id: number): Promise<Form> {
-    const form = await this.formRepository.findOne({ where: { id }, relations: ['user', 'answers'] });
+    const form = await this.formRepository.findOne({
+      where: { id },
+      relations: ['user', 'answers'],
+    });
     if (!form) {
-      throw new NotFoundException(`Форма с id ${id} не найдена`);
+      throw new NotFoundException(`Form with id ${id} not found`);
     }
     return form;
   }
-
+  async findByTemplateAndUser(
+    templateId: number,
+    userId: string,
+  ): Promise<Form | null> {
+    return this.formRepository.findOne({
+      where: {
+        template: { id: templateId },
+        user: { id: userId },
+      },
+      relations: ['user', 'answers'],
+    });
+  }
   async remove(id: number): Promise<void> {
     await this.formRepository.delete(id);
   }

@@ -5,7 +5,6 @@ import { FormsService } from './forms.service';
 import { CreateFormDto } from './dto/create-form.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Form } from './entities/form.entity';
-
 @ApiTags('forms')
 @Controller('forms')
 export class FormsController {
@@ -43,4 +42,21 @@ export class FormsController {
   async remove(@Param('id') id: number) {
     return this.formsService.remove(+id);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('status')
+  @ApiOperation({ summary: 'Check if user has already submitted a form for the given template' })
+  @ApiBody({
+    schema: {
+      example: { templateId: 123, userId: 7 },
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Returns status true if form exists', schema: { example: { status: true } } })
+  async checkResponseStatus(@Body() body: { templateId: number; userId: string }): Promise<{ status: boolean }> {
+    const { templateId, userId } = body;
+    const form = await this.formsService.findByTemplateAndUser(templateId, userId);
+    return { status: !!form };
+  }
 }
+
+

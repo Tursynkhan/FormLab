@@ -20,7 +20,7 @@ export class User {
   passwordHash: string;
 
   @Column({ default: 'user' })
-  role: string; // 'user' или 'admin'
+  role: string;
   
   @Column({ nullable: true })
   refreshTokenHash?: string;
@@ -29,13 +29,6 @@ export class User {
   @Column({ default: false })
   isBlocked: boolean;
 
-  @Column({ default: 'en' })
-  preferredLanguage: string;
-
-  @Column({ default: 'light' })
-  preferredTheme: string;
-
-  // Связи
   @OneToMany(() => Template, (template) => template.creator)
   templates: Template[];
 
