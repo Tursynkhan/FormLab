@@ -1,5 +1,5 @@
 import { useState, useEffect, CSSProperties } from "react";
-import { useForm, FieldErrors } from "react-hook-form";
+import { useForm, } from "react-hook-form";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Section from "./Section"

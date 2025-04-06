@@ -53,3 +53,14 @@ export type FormRules = {
   max?: { value?: string; message?: string };
 };
 
+export type PageMeta = {
+  page: number;
+  total: number;
+  totalPages: number;
+};
+export type FormData = {
+  readonly _id: string;
+  title: string;
+  updatedAt: string;
+  createdAt: string;
+};

@@ -1,6 +1,10 @@
-import React from 'react';
-import useAuth from '../../hooks/useAuth';
+import React, { ChangeEvent } from 'react';
 import styles from "./Header.module.scss"
+import { useNavigate } from "react-router-dom";
+import { debounce } from "../../utils/index";
+import { User } from "../../types/User";
+import { googleFormIcon } from '../../utils/index';
+import Avatar from "../Avatar";
 type HeaderProps = {
   search: string | null;
   user: User | null;
@@ -32,7 +36,7 @@ const Header = ({ search, user, logout }: HeaderProps) => {
         <i className="bx-search"></i>
       </div>
       <div className={styles.avatar}>
-        <Avatar userName={user?.name} logout={logout} />
+        <Avatar userName={user?.username} logout={logout} />
       </div>
     </div>
   );
