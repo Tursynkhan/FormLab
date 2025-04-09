@@ -1,20 +1,20 @@
-import { axiosPrivate } from "../api/axios";
+import ApiClient from "../api/axios";
 import { User } from "./config";
 
-const loginUser = (data: { email: string; password: string }) => {
-  return axiosPrivate({ method: "POST", url: User.login, data });
+ApiClient.loginUser = async (data) => {
+  return ApiClient.post(User.login, data, {
+    withCredentials: true,
+  });
 };
 
-const registerUser=(data:{username:string; email:string; password:string})=>{
-  return axiosPrivate({method:"POST",url:User.register,data});
+ApiClient.registerUser = async (data) => {
+  return ApiClient.post(User.register, data, { withCredentials: true });
 };
 
-const refreshUser=(data:{refreshToken:string})=>{
-  return axiosPrivate({method:"POST",url:User.refresh,data});
-}
-const logoutUser=()=>{
-  return axiosPrivate({method:"POST",url:User.logout});
+ApiClient.refreshUser = async (data) => {
+  return ApiClient.post(User.refresh, data, { withCredentials: true });
+};
+ApiClient.logoutUser = async () => {
+  return ApiClient.post(User.logout, {}, { withCredentials: true });
 };
 
-
-export { loginUser, registerUser, refreshUser, logoutUser };

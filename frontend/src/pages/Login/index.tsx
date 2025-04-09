@@ -1,47 +1,30 @@
 import React from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import Cookies from "js-cookie";
-import useAuth from '../../hooks/useAuth';
 import styles from "./Login.module.scss"
 import Input from "../../components/Input"
-
+import ApiClient from '../../api/axios';
 interface ILoginForm {
   email: string;
   password: string;
 }
 
-interface ILoginResponse {
-  accessToken: string;
-  username: string;
-}
+
 
 function isAxiosError(error: unknown): error is { response?: { data?: unknown } } {
   return typeof error === 'object' && error !== null && 'response' in error;
 }
-const API_URL = import.meta.env.VITE_API_URL;
+
 
 const LoginPage: React.FC = () => {
-  const { setAuth } = useAuth();
+  
   const { register, handleSubmit, formState: { errors } } = useForm<ILoginForm>();
   const navigate = useNavigate();
 
   const onSubmit: SubmitHandler<ILoginForm> = async (data) => {
-    console.log("Submitting data:", data); 
+    console.log("Submitting data:", data);
     try {
-      const response = await axios.post<ILoginResponse>(`${API_URL}/auth/login`, data, { withCredentials: true });
-      console.log('Login successful:', response.data);
-      const { accessToken } = response.data;
-
-      Cookies.set("accessToken", accessToken, { expires: 1/1440, secure: true });
-
-      setAuth(prev => ({
-        ...prev,
-        accessToken: response.data.accessToken,
-        username:response.data.username
-      }));
-
+      await ApiClient.loginUser(data);
       navigate('/');
     } catch (err: unknown) {
       if (isAxiosError(err)) {

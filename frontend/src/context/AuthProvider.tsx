@@ -1,20 +1,12 @@
 import { createContext, useState, ReactNode, Dispatch, SetStateAction } from "react";
+import {  AuthData } from "../types/User";
+
 import { useEffect } from "react";
-interface AuthData {
-    accessToken?: string | null;
-    refreshToken?: string | null;
-    user?: User | null;
-}
 const initialAuthState: AuthData = {
     accessToken: null,
     refreshToken: null,
     user: null,
-  };
-export interface User {
-    username: string;
-    role: string;
-    id: string;
-}
+};
 
 interface AuthContextType {
     auth: AuthData;
