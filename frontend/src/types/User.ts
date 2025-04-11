@@ -5,9 +5,9 @@ export interface User {
 }
 
 export interface AuthData {
-    accessToken?: string | null;
-    refreshToken?: string | null;
-    user?: User | null;
+    accessToken: string | null;
+    refreshToken: string | null;
+    user: User | null ;
 }
 
 export interface ILoginResponse {

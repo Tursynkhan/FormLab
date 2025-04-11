@@ -24,7 +24,7 @@ const LoginPage: React.FC = () => {
   const onSubmit: SubmitHandler<ILoginForm> = async (data) => {
     console.log("Submitting data:", data);
     try {
-      await ApiClient.loginUser(data);
+       ApiClient.loginUser(data);
       navigate('/');
     } catch (err: unknown) {
       if (isAxiosError(err)) {

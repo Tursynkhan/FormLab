@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import moment from 'moment-timezone';
 import Header from '../../components/Header';
 import styles from './Home.module.scss';
 import { PageMeta } from '../../types/Form';
@@ -8,10 +9,8 @@ import DropDown from '../../components/Dropdown';
 import { googleFormIcon } from '../../utils/index';
 import Pagination from '../../components/Pagination';
 import { toast } from 'react-toastify';
-import { getAllForms } from '../../services/Form';
-import { deleteFormById } from '../../services/Form';
 import { FormData } from '../../types/Form';
-
+import ApiClient from '../../api/axios';
 const HomePage: React.FC = () => {
   const [forms, setForms] = useState<FormData[]>([]);
 
@@ -21,7 +20,7 @@ const HomePage: React.FC = () => {
 
   const navigate = useNavigate();
 
-  const { auth } = useAuth();
+  const { auth ,logout} = useAuth();
 
   const formRef = useRef<HTMLTableElement>(null);
 
@@ -37,10 +36,10 @@ const HomePage: React.FC = () => {
   const getForms = async () => {
     try {
       const {
-        data: { list, pageMeta },
-      } = await getAllForms({ limit: 15, search, page });
-      setForms(list);
-      setPageMeta(pageMeta);
+        data,
+      } = await ApiClient.getAllForms({ limit: 15, search, page });
+      setForms(data.data.list);
+      setPageMeta(data.data.pageMeta);
     } finally {
       if (isLoading) setIsLoading(false);
     }
@@ -53,10 +52,10 @@ const HomePage: React.FC = () => {
   const handleDeleteForm = async (formId: string) => {
     if (!window.confirm("Are you sure to delete this form?")) return;
     const {
-      data: { message },
-    } = await deleteFormById(formId);
+      data
+    } = await ApiClient.deleteFormById(formId);
     const form = [...forms];
-    toast(message, { type: "success" });
+    toast(data.data.message, { type: "success" });
     const index = form.findIndex(({ _id }) => _id === formId);
     form.splice(index, 1);
     setForms(form);
@@ -73,7 +72,7 @@ const HomePage: React.FC = () => {
 
   return (
     <>
-      <Header search={search} user={user} logout={logout} />
+      <Header search={search} user={auth?.user} logout={logout} />
       <div className={styles.container}>
 
         <div className={styles.form}>

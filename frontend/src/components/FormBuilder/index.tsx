@@ -9,6 +9,7 @@ import Modal from "../Modal";
 import useTitle from "../../hooks/useTitle";
 import styles from "./FormBuilder.module.scss"
 import useAuth from "../../hooks/useAuth";
+import ApiClient from "../../api/axios";
 
 const FormBuilder = (formPage: FormPages) => {
 
@@ -25,7 +26,7 @@ const FormBuilder = (formPage: FormPages) => {
   const { auth } = useAuth();
 
   const methods = useForm<FormDetail>({ mode: "onChange" });
-  const { handleSubmit, reset, watch, setValue } = methods;
+  const { handleSubmit, reset, watch } = methods;
   const formData = watch();
 
   useTitle(formData.title);
@@ -35,25 +36,21 @@ const FormBuilder = (formPage: FormPages) => {
   const getFormDetails = async () => {
     if (!formId) return;
     try {
-      const { data: formDetail } = await axios.get<{ creatorId: string } & FormDetail>(`/templates/${formId}`);
-      if (isEdit && formDetail.creatorId !== auth.user?.id) {
+      const { data: formDetail } = await ApiClient.getFormById(formId);
+      if (isEdit && formDetail.data.creatorId !== auth.user?.id) {
         toast("Form creator only have the edit access", { type: "error" });
         navigate("/form/list");
       } else {
-        reset(formDetail);
+        reset(formDetail.data);
       }
     } finally {
       if (isLoading) setIsLoading(false);
     }
   };
-  const getResponseStatus = async (userId: string) => {
-    if (!formId) return;
+  const getResponseStatus = async () => {
+    if (!formId || !auth?.user?.id) return;
     try {
-      const { data } = await axios.post<{ status: boolean }>(
-        "/forms/status",
-        { templateId: Number(formId), userId },
-        { withCredentials: true }
-      );
+      const { data } = await ApiClient.getResponseStatus(Number(formId), auth.user.id);
       setIsResponded(data.status);
     } catch (error) {
       console.error("Error checking response status:", error);
@@ -62,7 +59,7 @@ const FormBuilder = (formPage: FormPages) => {
 
   useEffect(() => {
     getFormDetails();
-    if (isView) getResponseStatus(auth?.user?.id || "");
+    if (isView) getResponseStatus();
   }, [formId]);
 
 
@@ -104,7 +101,7 @@ const FormBuilder = (formPage: FormPages) => {
       answers: getFormResponse(data),
     };
     try {
-      await axios.post("/forms", body, { withCredentials: true });
+      await ApiClient.submitResponse(body);
       clearForm();
       setIsSubmited(true);
       toast.success("Response submitted successfully");
@@ -124,14 +121,14 @@ const FormBuilder = (formPage: FormPages) => {
     }
   };
 
-  const onInvalid = (error: any,action?: "next" | "back") => {
-    if (action === "back") {
-      setActiveSection((section) => section - 1);
-    } else if (action === "next") {
-      setActiveSection((section) => section + 1);
+  // const onInvalid = (error: FieldErrors<FormDetail>, action?: "next" | "back") => {
+  //   if (action === "back") {
+  //     setActiveSection((section) => section - 1);
+  //   } else if (action === "next") {
+  //     setActiveSection((section) => section + 1);
 
-    }
-  };
+  //   }
+  // };
 
   const clearForm = () => {
     reset();
@@ -204,7 +201,6 @@ const FormBuilder = (formPage: FormPages) => {
                       className={styles.btn_navigate}
                       onClick={handleSubmit(
                         (data) => onSubmit(data, "back"),
-                        (errors) => onInvalid(errors, "back")
                       )}
                     >
                       Back
@@ -215,7 +211,6 @@ const FormBuilder = (formPage: FormPages) => {
                       className={styles.btn_navigate}
                       onClick={handleSubmit(
                         (data) => onSubmit(data, "next"),
-                        (errors) => onInvalid(errors, "next")
                       )}
                     >
                       Next
@@ -226,7 +221,6 @@ const FormBuilder = (formPage: FormPages) => {
                       className={styles.btn_submit}
                       onClick={handleSubmit(
                         (data) => onSubmit(data, "submit"),
-                        onInvalid
                       )}
                     >
                       Submit

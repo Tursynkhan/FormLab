@@ -3,15 +3,16 @@ import styles from "./Header.module.scss"
 import { useNavigate } from "react-router-dom";
 import { debounce } from "../../utils/index";
 import { googleFormIcon } from '../../utils/index';
-import { User } from "../../context/AuthProvider"
+import { User } from '../../types/User';
 
 import Avatar from "../Avatar";
 type HeaderProps = {
   search: string | null;
   user: User | null;
+  logout: () => void;
 };
 
-const Header = ({ search, user }: HeaderProps) => {
+const Header = ({ search, user, logout }: HeaderProps) => {
   const navigate = useNavigate();
 
   const handleChange = debounce<ChangeEvent<HTMLInputElement>>(

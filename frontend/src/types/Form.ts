@@ -6,6 +6,7 @@ export type FormDetail = {
   _id?: Readonly<string>;
   title: string;
   sections: FormSection[];
+  creatorId: string;
 };
 
 export type FormSection = {
@@ -63,4 +64,9 @@ export type FormData = {
   title: string;
   updatedAt: string;
   createdAt: string;
+};
+
+export type FormResponse = {
+  formId: string;
+  answers: FormSubmitData[];
 };
